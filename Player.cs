@@ -1,17 +1,9 @@
-public class Player
+public class Player : Entity
 {
-    public int Y { get; private set; }
-    public int X { get; private set; }
-    
-    public Player(int y, int x)
+    public override char Symbol => '@';
+
+    public Player(int y, int x) : base(y, x, maxHp: 20, hp: 20, atk: 2)
     {
-        Y = y;
-        X = x;
-    }
-    
-    public void MoveTo(int y, int x)
-    {
-        Y = y;
-        X = x;
+        
     }
 }

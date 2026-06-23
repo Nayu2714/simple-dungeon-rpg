@@ -4,11 +4,14 @@ public class Map
     
     public int Height { get; }
     public int Width { get; }
+    
+    public List<Entity> Entities { get; }
+    
 
     public Map(string[] source)
     {
         Height = source.Length;
-        Width = source[0].Length;
+        Width = source.Max(str => str.Length);
         
         tiles = new Tile[Height, Width];
         

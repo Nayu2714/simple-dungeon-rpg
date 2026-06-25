@@ -83,6 +83,34 @@ class Program
                 {
                     player.MoveTo(nextY, nextX);
                 }
+
+                int[,] dist = BuildDistanceMap(map, player.Y, player.X);
+                
+                var orderedEnemies = enemies.OrderBy(e => dist[e.Y,e.X]).ToList();
+                    
+                foreach(Enemy enemy in orderedEnemies)
+                {
+                    int bestY = enemy.Y;
+                    int bestX = enemy.X;
+                    int bestDist = dist[bestY, bestX];
+
+                    for (int d = 0; d < 4; d++)
+                    {
+                        int ny = enemy.Y + dy[d];
+                        int nx = enemy.X + dx[d];
+                        
+                        if (ny < 0 || ny >= map.Height || nx < 0 || nx >= map.Width) continue;
+                        if (dist[ny, nx] == -1) continue;
+                        if (dist[ny, nx] >= bestDist) continue;
+                        if (GetEnemyAt(enemies, ny, nx) != null) continue;
+                        if (player.Y == ny && player.X == nx) continue;
+                        
+                        bestDist = dist[ny, nx];
+                        bestY = ny;
+                        bestX = nx;
+                    }
+                    enemy.MoveTo(bestY, bestX);
+                }
             }
         }
 
@@ -120,16 +148,6 @@ class Program
             }
             sb.AppendLine();
         }
-        /*
-        int playerIndex = player.Y * (map.Width + NewLineLength) + player.X;
-        sb[playerIndex] = player.Symbol;
-
-        foreach (Enemy enemy in enemies)
-        {
-            int enemyIndex = enemy.Y * (map.Width + NewLineLength) + enemy.X;
-            sb[enemyIndex] = enemy.Symbol;
-        }
-        */
         sb.AppendLine();
         
         // --- II. ステータス ---
@@ -153,5 +171,45 @@ class Program
     static Enemy? GetEnemyAt(List<Enemy> enemies, int y, int x)
     {
         return enemies.FirstOrDefault(enemy => enemy.Y == y && enemy.X == x);
+    }
+
+    static int[,] BuildDistanceMap(Map map, int startY, int startX)
+    {
+        int[] dy = { -1, 1, 0, 0 };
+        int[] dx = { 0, 0, -1, 1 };
+        
+        int[,] dist = new int[map.Height, map.Width];
+        for (int i = 0; i < map.Height; i++)
+            for (int j = 0; j < map.Width; j++)
+                dist[i, j] = -1;
+        
+        var queue = new Queue<(int y, int x)>();
+        dist[startY, startX] = 0;
+        queue.Enqueue((startY, startX));
+
+        while (queue.Count > 0)
+        {
+            var (y,x)  = queue.Dequeue();
+            for (int d = 0; d < 4; d++)
+            {
+                int ny = y + dy[d];
+                int nx = x+dx[d];
+                if (ny >= 0 && ny < map.Height &&
+                    nx >= 0 && nx < map.Width &&
+                    map.GetTile(ny, nx) != '#' &&
+                    dist[ny, nx] == -1)
+                {
+                    dist[ny, nx] = dist[y, x] + 1;
+                    queue.Enqueue((ny, nx));
+                }
+            }
+        }
+
+        return dist;
+    }
+
+    static bool IsAdjusent(int ay, int ax, int bx, int by)
+    {
+        return Math.Abs(ay - bx) + Math.Abs(ay - by) == 1;
     }
 }

@@ -73,11 +73,6 @@ class Program
                         enemies.Remove(target);
                         logs.Add($"{target.Name} を倒した！");
                     }
-                    else
-                    {
-                        player.TakeDamage(target.Atk);
-                        logs.Add($"{target.Name}の攻撃！ {target.Atk} ダメージ");
-                    }
                 }
                 else if(map.CanMoveTo(nextY, nextX))
                 {
@@ -90,6 +85,13 @@ class Program
                     
                 foreach(Enemy enemy in orderedEnemies)
                 {
+                    if (IsAdjusent(player.Y, player.X, enemy.Y, enemy.X))
+                    {
+                        player.TakeDamage(enemy.Atk);
+                        logs.Add($"{enemy.Name} の攻撃！ {enemy.Atk} ダメージ");
+                        continue;
+                    }
+                    
                     int bestY = enemy.Y;
                     int bestX = enemy.X;
                     int bestDist = dist[bestY, bestX];
@@ -208,8 +210,8 @@ class Program
         return dist;
     }
 
-    static bool IsAdjusent(int ay, int ax, int bx, int by)
+    static bool IsAdjusent(int ay, int ax, int by, int bx)
     {
-        return Math.Abs(ay - bx) + Math.Abs(ay - by) == 1;
+        return Math.Abs(ax - bx) + Math.Abs(ay - by) == 1;
     }
 }

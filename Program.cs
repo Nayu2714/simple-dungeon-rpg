@@ -114,11 +114,16 @@ class Program
                     enemy.MoveTo(bestY, bestX);
                 }
             }
+            if (player.IsDead) isRunning = false;
         }
 
-        Console.Clear();
+        //Console.Clear();
         Console.CursorVisible = true;
-        Console.WriteLine("ゲームを終了しました。");
+        /*if(player.IsDead) Console.WriteLine("ゲームオーバー！");
+        Console.WriteLine("ゲームを終了しました。");*/
+        if(player.IsDead) logs.Add("ゲームオーバー！");
+        logs.Add("ゲームを終了しました。");
+        Draw(map, player, enemies, mapOriginCursor, logs);
     }
 
     static void Draw(Map map, Player player, List<Enemy> enemies, (int row, int col) origin, List<string> logs)
@@ -131,7 +136,7 @@ class Program
         {
             for (int x = 0; x < map.Width; x++)
             {
-                if (player.Y == y && player.X == x)
+                if (player.Y == y && player.X == x && !player.IsDead)
                 {
                     sb.Append(player.Symbol);
                 }

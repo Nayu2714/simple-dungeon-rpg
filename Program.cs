@@ -20,7 +20,7 @@ class Program
         */
         
         //Map map = new Map(mapSource);
-        Map map = Map.Generate(8,20);
+        Map map = Map.Generate(20,60);
         Player player = new Player(2, 2);
         List<Enemy> enemies = new List<Enemy>();
         /*

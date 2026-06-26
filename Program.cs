@@ -8,7 +8,7 @@ class Program
     {
         Console.Clear();
         Console.CursorVisible = false;
-
+        /*
         string[] mapSource =
         {
             "......#..",
@@ -17,13 +17,17 @@ class Program
             ".##.#....",
             ".#......."
         };
-
-        Map map = new Map(mapSource);
+        */
+        
+        //Map map = new Map(mapSource);
+        Map map = Map.Generate(8,20);
         Player player = new Player(2, 2);
         List<Enemy> enemies = new List<Enemy>();
+        /*
         enemies.Add(new Enemy("Enemy", 0, 0));
         enemies.Add(new Enemy("Enemy", 1, 4));
         enemies.Add(new Enemy("Enemy", 4, 7));
+        */
 
         Console.WriteLine("【W/A/S/D】移動・攻撃 | 【Q】ゲーム終了");
         Console.WriteLine("-----------------------------------");

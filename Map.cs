@@ -47,9 +47,13 @@ public class Map
 
         foreach (var div in divs)
         {
-            for (int y = div.Top + 1; y < div.Bottom - 1; y++)
+            div.MakeRoom();
+            var room = div.Room;
+            if (room == null) continue;
+            
+            for (int y = room.Top; y < room.Bottom - 1; y++)
             {
-                for (int x = div.Left + 1; x < div.Right - 1; x++)
+                for (int x = room.Left; x < room.Right; x++)
                 {
                     tiles[y, x] = Tile.Floor;
                 }
@@ -102,9 +106,34 @@ public class Map
         {
             get => Right - Left;
         }
-        
+
+        public MapDivision? Room { get; private set; }
+
         public MapDivision? ChildA { get; private set; }
         public MapDivision? ChildB { get; private set; }
+
+        public void MakeRoom()
+        {
+            int maxRoomWidth = Width - 2;
+            int maxRoomHeight = Height - 2;
+            int minRoomWidth = Math.Max(4, maxRoomWidth / 2);
+            int minRoomHeight = Math.Max(4, maxRoomHeight / 2);
+            if (maxRoomWidth < 4 || maxRoomHeight < 4)
+            {
+                Room = new MapDivision();
+                Room.Set(Left+1, this.Top+1, this.Right-1, this.Bottom-1);
+                return;
+            }
+                        
+            int roomWidth = random.Next(minRoomWidth, maxRoomWidth + 1);
+            int roomHeight = random.Next(minRoomHeight, maxRoomHeight + 1);
+            
+            int roomLeft = Left + random.Next(1, Width - roomWidth);
+            int roomTop = Top + random.Next(1, Height - roomHeight);
+            
+            Room = new MapDivision();
+            Room.Set(roomLeft, roomTop, roomLeft + roomWidth, roomTop + roomHeight);
+        }
 
         public bool TrySplit()
         {
@@ -147,17 +176,5 @@ public class Map
 
             return divs;
         }
-        /*
-        public void CollectDivisions(List<MapDivision> divisions)
-        {
-            if (ChildA == null && ChildB == null)
-            {
-                divisions.Add(this);
-                return;
-            }
-            ChildA?.CollectDivisions(divisions);
-            ChildB?.CollectDivisions(divisions);
-        }
-        */
     }
 }

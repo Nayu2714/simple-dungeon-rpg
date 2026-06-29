@@ -33,41 +33,19 @@ public class Map
         Width = tiles.GetLength(1);
     }
 
-    /*
-    public static Map Generate(int height, int width)
-    {
-        height = Math.Max(3, height);
-        width = Math.Max(3, width);
-        
-        var tiles = new Tile[height,width];
-        for (int y = 0; y < height; y++)
-        {
-            for (int x = 0; x < width; x++)
-            {
-                bool isEdge = y == 0 || y == height - 1 || x == 0 || x == width - 1;
-                tiles[y, x] = isEdge ? Tile.Wall : Tile.Floor;
-            }
-        }
-        
-        return new Map(tiles);
-    }
-    */
-
     public static Map Generate(int height, int width)
     {
         var tiles = new Tile[height, width];
         for(int y = 0; y < height; y++)
             for (int x = 0; x < width; x++)
                 tiles[y, x] = Tile.Wall;
-        var rootDivision = new MapDivision();
-        rootDivision.Set(0,0,width,height);
         
-        rootDivision.Split(3);
+        var rootDiv = new MapDivision();
+        rootDiv.Set(0,0,width,height);
         
-        var divisions = new List<MapDivision>();
-        rootDivision.CollectDivisions(divisions);
+        var divs = rootDiv.Divide(8);
 
-        foreach (var div in divisions)
+        foreach (var div in divs)
         {
             for (int y = div.Top + 1; y < div.Bottom - 1; y++)
             {
@@ -128,10 +106,9 @@ public class Map
         public MapDivision? ChildA { get; private set; }
         public MapDivision? ChildB { get; private set; }
 
-        public void Split(int count)
+        public bool TrySplit()
         {
-            if (count <= 0) return;
-            if (Height <= 8 || Width <= 8) return;
+            if (Height <= 8 || Width <= 8) return false;
             
             ChildA = new MapDivision();
             ChildB = new MapDivision();
@@ -140,7 +117,6 @@ public class Map
             if (Width > Height) // 幅＞高さ → 縦に区画を割る
             {
                 mid = Left + random.Next((int)Math.Round(Width * 0.4), (int)Math.Round(Width * 0.6) + 1);
-
                 ChildA.Set(this.Left, this.Top, mid, this.Bottom);
                 ChildB.Set(mid, this.Top, this.Right, this.Bottom);
             }
@@ -151,11 +127,27 @@ public class Map
                 ChildA.Set(this.Left, this.Top, this.Right, mid);
                 ChildB.Set(this.Left, mid, this.Right, this.Bottom);
             }
-            
-            ChildA.Split(count - 1);
-            ChildB.Split(count - 1);
+
+            return true;
         }
 
+        public List<MapDivision> Divide(int count) // count = 欲しい区画の数
+        {
+            List<MapDivision> divs = new List<MapDivision>() { this };
+
+            for (int i = 0; i < count-1; i++)
+            {
+                MapDivision? maxDiv = divs.MaxBy(d => d.Width * d.Height);
+                if (maxDiv == null || maxDiv.TrySplit() == false) break;
+
+                divs.Remove(maxDiv);
+                divs.Add(maxDiv.ChildA!);
+                divs.Add(maxDiv.ChildB!);
+            }
+
+            return divs;
+        }
+        /*
         public void CollectDivisions(List<MapDivision> divisions)
         {
             if (ChildA == null && ChildB == null)
@@ -166,5 +158,6 @@ public class Map
             ChildA?.CollectDivisions(divisions);
             ChildB?.CollectDivisions(divisions);
         }
+        */
     }
 }

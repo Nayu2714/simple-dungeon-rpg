@@ -7,6 +7,8 @@ public class Map
     
     public List<Entity> Entities { get; }
 
+    public (int y, int x) PlayerStartPos { get; private set; }
+
     public Map(string[] source)
     {
         Height = source.Length;
@@ -26,11 +28,12 @@ public class Map
             }
     }
 
-    private Map(Tile[,] tiles)
+    private Map(Tile[,] tiles, (int startY, int startX) playerStartPos)
     {
         this.tiles = tiles;
         Height = tiles.GetLength(0);
         Width = tiles.GetLength(1);
+        PlayerStartPos = playerStartPos;
     }
 
     public static Map Generate(int height, int width)
@@ -43,7 +46,7 @@ public class Map
         var rootDiv = new MapDivision();
         rootDiv.Set(0,0,width,height);
         
-        var divs = rootDiv.Divide(8);
+        var divs = rootDiv.Divide(5);
 
         foreach (var div in divs)
         {
@@ -51,7 +54,7 @@ public class Map
             var room = div.Room;
             if (room == null) continue;
             
-            for (int y = room.Top; y < room.Bottom - 1; y++)
+            for (int y = room.Top; y < room.Bottom; y++)
             {
                 for (int x = room.Left; x < room.Right; x++)
                 {
@@ -60,7 +63,18 @@ public class Map
             }
         }
         
-        return new Map(tiles);
+        var corridors = new List<((int y, int x) a, (int y, int x) b)>();
+        rootDiv.CollectRoomCenters(corridors);
+
+        foreach (var (a, b) in corridors)
+        {
+            SetHCorridor(tiles, a.y, a.x, b.x);
+            SetWCorridor(tiles, b.x, a.y, b.y);
+        }
+
+        var playerStartPos = divs[0].RoomCenter();
+        
+        return new Map(tiles, playerStartPos);
     }
     
     public char GetTile(int y, int x)
@@ -78,6 +92,22 @@ public class Map
         return x >= 0 && y >= 0 &&
                x < Width && y < Height &&
                tiles[y, x] == Tile.Floor;
+    }
+
+    private static void SetHCorridor(Tile[,] tiles, int y, int x1, int x2)
+    {
+        for (int x = Math.Min(x1, x2); x <= Math.Max(x1, x2); x++)
+        {
+            tiles[y, x] = Tile.Floor;
+        }
+    }
+    
+    private static void SetWCorridor(Tile[,] tiles, int x, int y1, int y2)
+    {
+        for (int y = Math.Min(y1, y2); y <= Math.Max(y1, y2); y++)
+        {
+            tiles[y, x] = Tile.Floor;
+        }
     }
 
     public class MapDivision
@@ -135,6 +165,28 @@ public class Map
             Room.Set(roomLeft, roomTop, roomLeft + roomWidth, roomTop + roomHeight);
         }
 
+        public List<MapDivision> Divide(int count) // count = 欲しい区画の数
+                {
+                    List<MapDivision> divs = new List<MapDivision>() { this };
+        
+                    for (int i = 0; i < count-1; i++)
+                    {
+                        MapDivision? maxDiv = divs.MaxBy(d => d.Width * d.Height);
+                        if (maxDiv == null || maxDiv.TrySplit() == false) break;
+        
+                        divs.Remove(maxDiv);
+                        divs.Add(maxDiv.ChildA!);
+                        divs.Add(maxDiv.ChildB!);
+                    }
+        
+                    return divs;
+                }
+
+        public (int y, int x) RoomCenter()
+        {
+            return ( (Room!.Top + Room.Bottom) / 2, (Room.Left + Room.Right) / 2 );
+        }
+        
         public bool TrySplit()
         {
             if (Height <= 8 || Width <= 8) return false;
@@ -159,22 +211,20 @@ public class Map
 
             return true;
         }
-
-        public List<MapDivision> Divide(int count) // count = 欲しい区画の数
+        
+        public (int y, int x) CollectRoomCenters(List<((int y, int x) a, (int y, int x) b)> centers)
         {
-            List<MapDivision> divs = new List<MapDivision>() { this };
-
-            for (int i = 0; i < count-1; i++)
+            if (ChildA == null && ChildB == null)
             {
-                MapDivision? maxDiv = divs.MaxBy(d => d.Width * d.Height);
-                if (maxDiv == null || maxDiv.TrySplit() == false) break;
-
-                divs.Remove(maxDiv);
-                divs.Add(maxDiv.ChildA!);
-                divs.Add(maxDiv.ChildB!);
+                return RoomCenter();
             }
+            
+            var aCenter = ChildA!.CollectRoomCenters(centers);
+            var bCenter = ChildB!.CollectRoomCenters(centers);
+            
+            centers.Add((aCenter, bCenter));
 
-            return divs;
+            return aCenter;
         }
     }
 }

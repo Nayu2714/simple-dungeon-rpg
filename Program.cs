@@ -19,9 +19,8 @@ class Program
         };
         */
         
-        //Map map = new Map(mapSource);
-        Map map = Map.Generate(30,60);
-        Player player = new Player(2, 2);
+        Map map = Map.Generate(20,40);
+        Player player = new Player(map.PlayerStartPos.y, map.PlayerStartPos.x);
         List<Enemy> enemies = new List<Enemy>();
         /*
         enemies.Add(new Enemy("Enemy", 0, 0));
@@ -120,11 +119,8 @@ class Program
             }
             if (player.IsDead) isRunning = false;
         }
-
-        //Console.Clear();
+        
         Console.CursorVisible = true;
-        /*if(player.IsDead) Console.WriteLine("ゲームオーバー！");
-        Console.WriteLine("ゲームを終了しました。");*/
         if(player.IsDead) logs.Add("ゲームオーバー！");
         logs.Add("ゲームを終了しました。");
         Draw(map, player, enemies, mapOriginCursor, logs);
@@ -132,7 +128,6 @@ class Program
 
     static void Draw(Map map, Player player, List<Enemy> enemies, (int row, int col) origin, List<string> logs)
     {
-        //StringBuilder sb = new StringBuilder((map.Width + NewLineLength) * map.Height);
         StringBuilder sb = new StringBuilder();
         
         // --- I. メイン画面（マップ） ---

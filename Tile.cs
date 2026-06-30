@@ -2,5 +2,7 @@ public enum Tile
 {
     Empty,
     Floor,
-    Wall
+    Wall,
+    DownStairs,
+    UpStairs,
 }

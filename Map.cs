@@ -23,6 +23,8 @@ public class Map
                 {
                     '.' => Tile.Floor,
                     '#' => Tile.Wall,
+                    '>' => Tile.DownStairs,
+                    '<' => Tile.UpStairs,
                     _   => Tile.Empty
                 };
             }
@@ -83,15 +85,28 @@ public class Map
         {
             Tile.Floor => '.',
             Tile.Wall => '#',
+            Tile.DownStairs => '>',
+            Tile.UpStairs => '<',
             _ => ' '
         };
     }
-
+    
     public bool CanMoveTo(int y, int x)
     {
-        return x >= 0 && y >= 0 &&
-               x < Width && y < Height &&
-               tiles[y, x] == Tile.Floor;
+        if (x < 0 || y < 0 || x >= Width || y >= Height) return false;
+
+        return tiles[y, x] switch
+        {
+            Tile.Floor => true,
+            Tile.UpStairs => true,
+            Tile.DownStairs => true,
+            _ => false
+        };
+    }
+
+    public void SetDownStairs(int y, int x)
+    {
+        if(tiles[y, x] == Tile.Floor) tiles[y, x] = Tile.DownStairs;
     }
 
     private static void SetHCorridor(Tile[,] tiles, int y, int x1, int x2)

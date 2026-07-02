@@ -8,6 +8,9 @@ class Program
     {
         Console.Clear();
         Console.CursorVisible = false;
+
+        var rng = new Random();
+        
         /*
         string[] mapSource =
         {
@@ -19,7 +22,7 @@ class Program
         };
         */
         
-        Map map = Map.Generate(20,40);
+        Map map = Map.Generate(20,40, rng);
         Player player = new Player(map.PlayerStartPos.y, map.PlayerStartPos.x);
         List<Enemy> enemies = new List<Enemy>();
         /*

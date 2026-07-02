@@ -41,14 +41,14 @@ public class Map
         Rooms = rooms;
     }
 
-    public static Map Generate(int height, int width)
+    public static Map Generate(int height, int width, Random rng)
     {
         var tiles = new Tile[height, width];
         for(int y = 0; y < height; y++)
             for (int x = 0; x < width; x++)
                 tiles[y, x] = Tile.Wall;
         
-        var rootDiv = new MapDivision();
+        var rootDiv = new MapDivision(rng);
         rootDiv.Set(0,0,width,height);
         
         var divs = rootDiv.Divide(5);
@@ -132,7 +132,12 @@ public class Map
 
     public class MapDivision
     {
-        private static readonly Random Rng = new Random();
+        private readonly Random _rng;
+
+        public MapDivision(Random rng)
+        {
+            _rng = rng;
+        }
         
         public int Left { get; private set; }
         public int Top { get; private set; }
@@ -174,10 +179,10 @@ public class Map
                 return;
             }
                         
-            int roomWidth = Rng.Next(minRoomWidth, maxRoomWidth + 1);
-            int roomHeight = Rng.Next(minRoomHeight, maxRoomHeight + 1);
-            int roomLeft = Left + Rng.Next(1, Width - roomWidth);
-            int roomTop = Top + Rng.Next(1, Height - roomHeight);
+            int roomWidth = _rng.Next(minRoomWidth, maxRoomWidth + 1);
+            int roomHeight = _rng.Next(minRoomHeight, maxRoomHeight + 1);
+            int roomLeft = Left + _rng.Next(1, Width - roomWidth);
+            int roomTop = Top + _rng.Next(1, Height - roomHeight);
 
             Room = new Room(roomLeft, roomTop, roomLeft + roomWidth, roomTop + roomHeight);
         }
@@ -198,31 +203,24 @@ public class Map
         
                     return divs;
                 }
-
-        /*
-        public (int y, int x) RoomCenter()
-        {
-            return ( (Room!.Top + Room.Bottom) / 2, (Room.Left + Room.Right) / 2 );
-        }
-        */
         
         public bool TrySplit()
         {
             if (Height <= 8 || Width <= 8) return false;
             
-            ChildA = new MapDivision();
-            ChildB = new MapDivision();
+            ChildA = new MapDivision(_rng);
+            ChildB = new MapDivision(_rng);
             int mid;
             
             if (Width > Height) // 幅＞高さ → 縦に区画を割る
             {
-                mid = Left + Rng.Next((int)Math.Round(Width * 0.4), (int)Math.Round(Width * 0.6) + 1);
+                mid = Left + _rng.Next((int)Math.Round(Width * 0.4), (int)Math.Round(Width * 0.6) + 1);
                 ChildA.Set(this.Left, this.Top, mid, this.Bottom);
                 ChildB.Set(mid, this.Top, this.Right, this.Bottom);
             }
             else // 幅＜高さ → 横に区画を割る
             {
-                mid = Top + Rng.Next((int)Math.Round(Height * 0.4), (int)Math.Round(Height * 0.6) + 1);
+                mid = Top + _rng.Next((int)Math.Round(Height * 0.4), (int)Math.Round(Height * 0.6) + 1);
 
                 ChildA.Set(this.Left, this.Top, this.Right, mid);
                 ChildB.Set(this.Left, mid, this.Right, this.Bottom);

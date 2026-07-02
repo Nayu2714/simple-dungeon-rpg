@@ -78,7 +78,7 @@ public class Map
         }
         
         var rooms = divs.Select(div => div.Room!).ToList();
-
+        
         var playerStartPos = rooms[0].Center;
         
         return new Map(tiles, playerStartPos,rooms);
@@ -108,10 +108,21 @@ public class Map
             _ => false
         };
     }
-
+    
     public void SetDownStairs(int y, int x)
     {
-        if(tiles[y, x] == Tile.Floor) tiles[y, x] = Tile.DownStairs;
+        if (tiles[y, x] == Tile.Floor)
+        {
+            tiles[y, x] = Tile.DownStairs;
+        }
+    }
+
+    public void SetUpStairs(int y, int x)
+    {
+        if (tiles[y, x] == Tile.Floor)
+        {
+            tiles[y, x] = Tile.UpStairs;
+        }
     }
 
     private static void SetHCorridor(Tile[,] tiles, int y, int x1, int x2)

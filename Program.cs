@@ -23,8 +23,39 @@ class Program
         */
         
         Map map = Map.Generate(20,40, rng);
+
+        (int y, int x) downStairsPos;
+        int attempts = 0;
+        do
+        {
+            downStairsPos = map.Rooms[rng.Next(map.Rooms.Count)].RandomPoint(rng);
+            attempts++;
+        }
+        while (downStairsPos == map.PlayerStartPos && attempts < 100);
+        attempts = 0;
+        
+        (int y, int x) upStairsPos = map.PlayerStartPos;
+        
+        map.SetDownStairs(downStairsPos.y, downStairsPos.x);
+        map.SetUpStairs(upStairsPos.y, upStairsPos.x);
+        
         Player player = new Player(map.PlayerStartPos.y, map.PlayerStartPos.x);
+        
         List<Enemy> enemies = new List<Enemy>();
+        int enemyNums = 5;
+        for (int i = 1; i <= enemyNums; i++)
+        {
+            (int y, int x) pos;
+            do
+            {
+                pos = map.Rooms[rng.Next(0, map.Rooms.Count)].RandomPoint(rng);
+                attempts++;
+            }
+            while((!map.CanMoveTo(pos.y, pos.x) || GetEnemyAt(enemies, pos.y, pos.x) != null || pos == map.PlayerStartPos) && attempts < 100);
+            attempts = 0;
+            enemies.Add(new Enemy("Enemy",pos.y,pos.x));
+        }
+        
         /*
         enemies.Add(new Enemy("Enemy", 0, 0));
         enemies.Add(new Enemy("Enemy", 1, 4));

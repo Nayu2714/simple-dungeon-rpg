@@ -21,6 +21,14 @@ public abstract class Entity
     }
     
     public void MoveTo(int y, int x) { this.Y = y; this.X = x; }
-    
-    public void TakeDamage(int damage) { this.Hp = Math.Clamp(this.Hp - damage, 0, MaxHp); }
+
+    public void TakeDamage(int amount)
+    {
+        this.Hp = Math.Clamp(this.Hp - amount, 0, MaxHp);
+    }
+
+    public void Heal(int amount)
+    {
+        this.Hp = Math.Clamp(this.Hp + amount, 0, MaxHp);
+    }
 }

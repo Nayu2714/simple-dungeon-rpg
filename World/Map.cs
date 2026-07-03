@@ -8,9 +8,9 @@ public class Map
     
     public int Height { get; }
     public int Width { get; }
-    
-    public List<Entity> Entities { get; }
-    
+    /*
+    public List<Entity> Entities { get; } // 消してもいい・いらない
+    */
     public IReadOnlyList<Room> Rooms { get; }
 
     public (int y, int x) PlayerStartPos { get; private set; }

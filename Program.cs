@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using simple_dungeon_rpg.Entities;
+using simple_dungeon_rpg.Items;
 using simple_dungeon_rpg.World;
 
 namespace simple_dungeon_rpg;
@@ -57,7 +58,7 @@ class Program
             }
             while((!map.CanMoveTo(pos.y, pos.x) || GetEnemyAt(enemies, pos.y, pos.x) != null || pos == map.PlayerStartPos) && attempts < 100);
             attempts = 0;
-            enemies.Add(new Enemy("Enemy",pos.y,pos.x));
+            enemies.Add(new Enemy("Enemy", pos.y, pos.x));
         }
         
         /*
@@ -65,7 +66,25 @@ class Program
         enemies.Add(new Enemy("Enemy", 1, 4));
         enemies.Add(new Enemy("Enemy", 4, 7));
         */
-
+        
+        List<(Item item, int y, int x)> floorItems = new List<(Item item, int y, int x)>();
+        List<Item> initItems = new List<Item>();
+        initItems.Add(new Potion("HealPotion", 20));
+        initItems.Add(new Potion("HealPotion", 20));
+        initItems.Add(new Weapon("IronSword", 5));
+        foreach(var item in initItems)
+        {
+            (int y, int x) pos;
+            do
+            {
+                pos = map.Rooms[rng.Next(0, map.Rooms.Count)].RandomPoint(rng);
+                attempts++;
+            } while ((!map.CanMoveTo(pos.y, pos.x) || GetItemAt(floorItems, pos.y, pos.x) != null ||
+                      pos == map.PlayerStartPos) && attempts < 100);
+            attempts = 0;
+            floorItems.Add((item, pos.y, pos.x));
+        }
+        
         Console.WriteLine("【W/A/S/D】移動・攻撃 | 【Q】ゲーム終了");
         Console.WriteLine("-----------------------------------");
         Console.WriteLine();
@@ -81,7 +100,7 @@ class Program
         bool isRunning = true;
         while (isRunning)
         {
-            Draw(map, player, enemies, mapOriginCursor, logs);
+            Draw(map, player, enemies, floorItems, mapOriginCursor, logs);
             
             // 入力部
             ConsoleKeyInfo inputKey = Console.ReadKey(true);
@@ -161,10 +180,10 @@ class Program
         Console.CursorVisible = true;
         if(player.IsDead) logs.Add("ゲームオーバー！");
         logs.Add("ゲームを終了しました。");
-        Draw(map, player, enemies, mapOriginCursor, logs);
+        Draw(map, player, enemies, floorItems, mapOriginCursor, logs);
     }
 
-    static void Draw(Map map, Player player, List<Enemy> enemies, (int row, int col) origin, List<string> logs)
+    static void Draw(Map map, Player player, List<Enemy> enemies, List<(Item item, int y, int x)> floorItems, (int row, int col) origin, List<string> logs)
     {
         StringBuilder sb = new StringBuilder();
         
@@ -183,6 +202,10 @@ class Program
                     if (enemy != null)
                     {
                         sb.Append(enemy.Symbol);
+                    }
+                    else if (GetItemAt(floorItems, y, x) is Item item)
+                    {
+                        sb.Append(item.Symbol);
                     }
                     else
                     {
@@ -215,6 +238,11 @@ class Program
     static Enemy? GetEnemyAt(List<Enemy> enemies, int y, int x)
     {
         return enemies.FirstOrDefault(enemy => enemy.Y == y && enemy.X == x);
+    }
+
+    static Item? GetItemAt(List<(Item item, int y, int x)> floorItems, int y, int x)
+    {
+        return floorItems.FirstOrDefault(item => item.y == y && item.x == x).item;
     }
 
     static int[,] BuildDistanceMap(Map map, int startY, int startX)

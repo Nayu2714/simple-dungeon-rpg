@@ -6,6 +6,8 @@ namespace simple_dungeon_rpg.Items;
 public class Potion : Item, IUsable
 {
     public bool IsConsumable => true;
+
+    public override char Symbol => '!';
     
     public int HealAmount { get; private set; }
 

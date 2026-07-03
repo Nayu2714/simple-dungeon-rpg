@@ -1,3 +1,5 @@
+namespace simple_dungeon_rpg.Entities;
+
 public class Enemy : Entity
 {
     public override char Symbol => 'E';

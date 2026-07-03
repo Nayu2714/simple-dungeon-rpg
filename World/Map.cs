@@ -1,3 +1,7 @@
+using simple_dungeon_rpg.Entities;
+
+namespace simple_dungeon_rpg.World;
+
 public class Map
 {
     private readonly Tile[,] tiles;

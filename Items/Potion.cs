@@ -1,3 +1,8 @@
+using simple_dungeon_rpg.Entities;
+using simple_dungeon_rpg.Items.Interfaces;
+
+namespace simple_dungeon_rpg.Items;
+
 public class Potion : Item, IUsable
 {
     public bool IsConsumable => true;

@@ -11,7 +11,7 @@
   <ItemGroup>
     <Folder Include="Entities\" />
     <Folder Include="Items\Interfaces\" />
-    <Folder Include="Map\" />
+    <Folder Include="World\" />
   </ItemGroup>
 
 </Project>

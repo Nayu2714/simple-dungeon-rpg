@@ -1,3 +1,5 @@
+namespace simple_dungeon_rpg.World;
+
 public class Room
 {
     public int Left { get; }

@@ -1,4 +1,8 @@
 ﻿using System.Text;
+using simple_dungeon_rpg.Entities;
+using simple_dungeon_rpg.World;
+
+namespace simple_dungeon_rpg;
 
 class Program
 {

@@ -1,3 +1,7 @@
+using simple_dungeon_rpg.Items.Interfaces;
+
+namespace simple_dungeon_rpg.Items;
+
 public class Weapon : Item, IEquippable
 {
     public int Atk { get; private set; }

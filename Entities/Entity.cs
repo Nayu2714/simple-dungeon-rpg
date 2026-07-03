@@ -1,3 +1,5 @@
+namespace simple_dungeon_rpg.Entities;
+
 public abstract class Entity
 {
     public int Y { get; private set; }

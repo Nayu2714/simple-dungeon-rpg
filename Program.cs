@@ -106,12 +106,15 @@ class Program
             ConsoleKeyInfo inputKey = Console.ReadKey(true);
 
             int dir = -1;
+            bool get = false;
+            
             switch (inputKey.Key)
             {
                 case ConsoleKey.W: dir = 0; break;
                 case ConsoleKey.S: dir = 1; break;
                 case ConsoleKey.A: dir = 2; break;
                 case ConsoleKey.D: dir = 3; break;
+                case ConsoleKey.Spacebar: get = true; break;
                 case ConsoleKey.Q: isRunning = false; break;
             }
 
@@ -172,6 +175,18 @@ class Program
                         bestX = nx;
                     }
                     enemy.MoveTo(bestY, bestX);
+                }
+            }
+            else if (get)
+            {
+                var hearItems = GetItemsAt(floorItems, player.Y, player.X);
+                if (hearItems != null)
+                {
+                    foreach (var item in hearItems)
+                    {
+                        player.AddItem(item);
+                    }
+                    floorItems.RemoveAll(item => item.y == player.Y && item.x == player.X);
                 }
             }
             if (player.IsDead) isRunning = false;
@@ -242,7 +257,12 @@ class Program
 
     static Item? GetItemAt(List<(Item item, int y, int x)> floorItems, int y, int x)
     {
-        return floorItems.FirstOrDefault(item => item.y == y && item.x == x).item;
+        return floorItems.FirstOrDefault(items => items.y == y && items.x == x).item;
+    }
+    
+    static List<Item> GetItemsAt(List<(Item item, int y, int x)> floorItems, int y, int x)
+    {
+        return floorItems.Where(entry => entry.y == y && entry.x == x).Select(e => e.item).ToList();
     }
 
     static int[,] BuildDistanceMap(Map map, int startY, int startX)

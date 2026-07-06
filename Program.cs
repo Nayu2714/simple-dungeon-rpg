@@ -1,6 +1,8 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using simple_dungeon_rpg.Entities;
 using simple_dungeon_rpg.Items;
+using simple_dungeon_rpg.Items.Interfaces;
 using simple_dungeon_rpg.World;
 
 namespace simple_dungeon_rpg;
@@ -47,7 +49,7 @@ class Program
         Player player = new Player(map.PlayerStartPos.y, map.PlayerStartPos.x);
         
         List<Enemy> enemies = new List<Enemy>();
-        int enemyNums = 0;
+        int enemyNums = 4;
         for (int i = 1; i <= enemyNums; i++)
         {
             (int y, int x) pos;
@@ -146,6 +148,8 @@ class Program
                     player.MoveTo(nextY, nextX);
                 }
 
+                ProcessEnemyTurn(map, player, enemies, logs);
+                /*
                 int[,] dist = BuildDistanceMap(map, player.Y, player.X);
                 
                 var orderedEnemies = enemies.OrderBy(e => dist[e.Y,e.X]).ToList();
@@ -180,6 +184,7 @@ class Program
                     }
                     enemy.MoveTo(bestY, bestX);
                 }
+                */
             }
             else if (get)
             {
@@ -222,6 +227,16 @@ class Program
                 else if (enter)
                 {
                     // Inventoryのアイテムを使用
+                    var item = player.Inventory[selectedIndex];
+                    if (item is IUsable usable)
+                    {
+                        usable.Use(player);
+                        if (usable.IsConsumable) player.RemoveItem(item);
+                    }else if (item is IEquippable equippable)
+                    {
+                        player.Equip(equippable);
+                    }
+                    // ---
                     inventory = false;
                 }
                 else if (back)
@@ -310,6 +325,47 @@ class Program
             
             Console.SetCursorPosition(origin.col, origin.row + i);
             Console.Write(sb.ToString());
+        }
+    }
+
+    static void ProcessEnemyTurn(Map map, Player player, List<Enemy> enemies, List<string> logs)
+    {
+        int[] dy = { -1, 1, 0, 0 };
+        int[] dx = { 0, 0, -1, 1 };
+
+        int[,] dist = BuildDistanceMap(map, player.Y, player.X);
+        
+        var orderedEnemies = enemies.OrderBy(e => dist[e.Y,e.X]).ToList();
+        
+        foreach(Enemy enemy in orderedEnemies)
+        {
+            if (IsAdjusent(player.Y, player.X, enemy.Y, enemy.X))
+            {
+                player.TakeDamage(enemy.Atk);
+                logs.Add($"{enemy.Name} の攻撃！ {enemy.Atk} ダメージ");
+                continue;
+            }
+                    
+            int bestY = enemy.Y;
+            int bestX = enemy.X;
+            int bestDist = dist[bestY, bestX];
+
+            for (int d = 0; d < 4; d++)
+            {
+                int ny = enemy.Y + dy[d];
+                int nx = enemy.X + dx[d];
+                        
+                if (ny < 0 || ny >= map.Height || nx < 0 || nx >= map.Width) continue;
+                if (dist[ny, nx] == -1) continue;
+                if (dist[ny, nx] >= bestDist) continue;
+                if (GetEnemyAt(enemies, ny, nx) != null) continue;
+                if (player.Y == ny && player.X == nx) continue;
+                        
+                bestDist = dist[ny, nx];
+                bestY = ny;
+                bestX = nx;
+            }
+            enemy.MoveTo(bestY, bestX);
         }
     }
     

@@ -7,7 +7,7 @@ public abstract class Entity
     
     public int MaxHp { get; private set; }
     public int Hp { get; private set; }
-    public int Atk { get; private set; }
+    public virtual int Atk { get; private set; }
 
     public bool IsDead => Hp <= 0;
     

@@ -5,6 +5,8 @@ namespace simple_dungeon_rpg.Entities;
 
 public class Player : Entity
 {
+    public override int Atk => base.Atk + (Weapon?.Atk ?? 0);
+    
     public override char Symbol => '@';
     
     public IReadOnlyList<Item> Inventory => _inventory;

@@ -202,7 +202,7 @@ class Program
             int selectedIndex = 0;
             while (inventory)
             {
-                DrawInventory(player.Inventory, selectedIndex, inventoryOriginCursor);
+                DrawInventory(player, selectedIndex, inventoryOriginCursor);
                 
                 ConsoleKeyInfo inventoryInputKey = Console.ReadKey(true);
 
@@ -222,23 +222,42 @@ class Program
 
                 if (select != 0)
                 {
-                    selectedIndex = Math.Clamp(selectedIndex + select, 0, player.Inventory.Count);
+                    int equipCount = (player.Weapon != null ? 1 : 0);
+                    selectedIndex = Math.Clamp(selectedIndex + select, 0, player.Inventory.Count + equipCount);
                 }
                 else if (enter)
                 {
-                    // Inventoryのアイテムを使用
-                    var item = player.Inventory[selectedIndex];
-                    if (item is IUsable usable)
+                    int equipNum = (player.Weapon != null ? 1 : 0);
+                    if (selectedIndex == player.Inventory.Count + equipNum)
                     {
-                        usable.Use(player);
-                        if (usable.IsConsumable) player.RemoveItem(item);
-                    }else if (item is IEquippable equippable)
-                    {
-                        player.Equip(equippable);
+                        // (Close) が選択された時の処理
+                        inventory = false;
                     }
-                    // ---
-                    inventory = false;
-                    ProcessEnemyTurn(map, player, enemies, logs);
+                    else if (equipNum != 0 && selectedIndex == player.Inventory.Count)
+                    {
+                        // 装備行 が選択された時の処理
+                        player.UnEquip();
+                        inventory = false;
+                        ProcessEnemyTurn(map, player, enemies, logs);
+                    }
+                    else
+                    {
+                        // インベントリ内アイテム行 が選択されたときの処理
+                        var item = player.Inventory[selectedIndex];
+                        if (item is IUsable usable)
+                        {
+                            usable.Use(player);
+                            if (usable.IsConsumable) player.RemoveItem(item);
+                            ProcessEnemyTurn(map, player, enemies, logs);
+                        }
+                        else if (item is IEquippable equippable)
+                        {
+                            player.Equip(equippable);
+                            ProcessEnemyTurn(map, player, enemies, logs);
+                        }
+                        // ---
+                        inventory = false;
+                    }
                 }
                 else if (back)
                 {
@@ -307,21 +326,28 @@ class Program
         Console.Write(sb.ToString());
     }
 
-    static void DrawInventory(IReadOnlyList<Item> inventory, int index, (int row, int col) origin)
+    static void DrawInventory(Player player, int index, (int row, int col) origin)
     {
-        for (int i = 0; i < inventory.Count + 1; i++) // (close)行を追加するため、`inventory.Count + 1`にしている。
+        IReadOnlyList<Item> inventory = player.Inventory;
+        int equipNum = (player.Weapon != null ? 1 : 0);
+        
+        for (int i = 0; i < inventory.Count + 1 + equipNum; i++) // (close)行を追加するため、`inventory.Count + 1`にしている。
         {
             StringBuilder sb = new StringBuilder();
             
-            if (i == index) sb.Append("> "); else sb.Append("  ");
+            if (i == index) sb.Append(">"); else sb.Append(" ");
             
-            if (i == inventory.Count)
+            if (equipNum != 0 && i == inventory.Count)
+            {
+                sb.Append("E "+player.Weapon!.Name.PadRight(40));
+            }
+            else if (i == inventory.Count + equipNum)
             {
                 sb.AppendLine("(close)".PadRight(40));
             }
             else
             {
-                sb.AppendLine(inventory[i].Name.PadRight(40));
+                sb.AppendLine("  "+inventory[i].Name.PadRight(40));
             }
             
             Console.SetCursorPosition(origin.col, origin.row + i);

@@ -37,6 +37,12 @@ public class Player : Entity
         }
         // 将来的に 防具・アクセサリー 枠を追加する。
     }
+
+    public void UnEquip()
+    {
+        AddItem(this.Weapon);
+        this.Weapon = null;
+    }
     
     public void AddItem(Item item)
     {

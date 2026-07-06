@@ -47,7 +47,7 @@ class Program
         Player player = new Player(map.PlayerStartPos.y, map.PlayerStartPos.x);
         
         List<Enemy> enemies = new List<Enemy>();
-        int enemyNums = 5;
+        int enemyNums = 0;
         for (int i = 1; i <= enemyNums; i++)
         {
             (int y, int x) pos;
@@ -93,6 +93,7 @@ class Program
 
         // マップ描画用 描画開始位置
         (int row, int col) mapOriginCursor = (Console.CursorTop, Console.CursorLeft);
+        (int row, int col) inventoryOriginCursor = (Console.CursorTop, Console.CursorLeft + 6);
 
         int[] dy = { -1, 1, 0, 0 };
         int[] dx = { 0, 0, -1, 1 };
@@ -107,6 +108,7 @@ class Program
 
             int dir = -1;
             bool get = false;
+            bool inventory = false;
             
             switch (inputKey.Key)
             {
@@ -115,9 +117,11 @@ class Program
                 case ConsoleKey.A: dir = 2; break;
                 case ConsoleKey.D: dir = 3; break;
                 case ConsoleKey.Spacebar: get = true; break;
+                case ConsoleKey.Tab: inventory = true; break;
+                
                 case ConsoleKey.Q: isRunning = false; break;
             }
-
+            
             if (dir != -1)
             {
                 int nextY = player.Y + dy[dir];
@@ -180,7 +184,7 @@ class Program
             else if (get)
             {
                 var hearItems = GetItemsAt(floorItems, player.Y, player.X);
-                if (hearItems != null)
+                if (hearItems.Count > 0)
                 {
                     foreach (var item in hearItems)
                     {
@@ -189,6 +193,43 @@ class Program
                     floorItems.RemoveAll(item => item.y == player.Y && item.x == player.X);
                 }
             }
+
+            int selectedIndex = 0;
+            while (inventory)
+            {
+                DrawInventory(player.Inventory, selectedIndex, inventoryOriginCursor);
+                
+                ConsoleKeyInfo inventoryInputKey = Console.ReadKey(true);
+
+                int select = 0;
+                bool enter = false;
+                bool back = false;
+                
+                switch (inventoryInputKey.Key)
+                {
+                    case ConsoleKey.W: select = -1; break;
+                    case ConsoleKey.S: select =  1; break;
+                    case ConsoleKey.Enter or ConsoleKey.Spacebar: enter = true; break;
+                    case ConsoleKey.Tab or ConsoleKey.Escape: back = true; break;
+                    
+                    case ConsoleKey.Q: isRunning = false; inventory = false; break;
+                }
+
+                if (select != 0)
+                {
+                    selectedIndex = Math.Clamp(selectedIndex + select, 0, player.Inventory.Count);
+                }
+                else if (enter)
+                {
+                    // Inventoryのアイテムを使用
+                    inventory = false;
+                }
+                else if (back)
+                {
+                    inventory = false;
+                }
+            }
+            
             if (player.IsDead) isRunning = false;
         }
         
@@ -250,6 +291,28 @@ class Program
         Console.Write(sb.ToString());
     }
 
+    static void DrawInventory(IReadOnlyList<Item> inventory, int index, (int row, int col) origin)
+    {
+        for (int i = 0; i < inventory.Count + 1; i++) // (close)行を追加するため、`inventory.Count + 1`にしている。
+        {
+            StringBuilder sb = new StringBuilder();
+            
+            if (i == index) sb.Append("> "); else sb.Append("  ");
+            
+            if (i == inventory.Count)
+            {
+                sb.AppendLine("(close)".PadRight(40));
+            }
+            else
+            {
+                sb.AppendLine(inventory[i].Name.PadRight(40));
+            }
+            
+            Console.SetCursorPosition(origin.col, origin.row + i);
+            Console.Write(sb.ToString());
+        }
+    }
+    
     static Enemy? GetEnemyAt(List<Enemy> enemies, int y, int x)
     {
         return enemies.FirstOrDefault(enemy => enemy.Y == y && enemy.X == x);

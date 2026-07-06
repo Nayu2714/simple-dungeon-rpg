@@ -238,6 +238,7 @@ class Program
                     }
                     // ---
                     inventory = false;
+                    ProcessEnemyTurn(map, player, enemies, logs);
                 }
                 else if (back)
                 {

@@ -6,6 +6,7 @@ namespace simple_dungeon_rpg.Entities;
 public class Player : Entity
 {
     public override int Atk => base.Atk + (Weapon?.Atk ?? 0);
+    public int VisionRadius { get; private set; }
     
     public override char Symbol => '@';
     
@@ -17,6 +18,7 @@ public class Player : Entity
     public Player(int y, int x) : base(y, x, maxHp: 20, hp: 20, atk: 2)
     {
         _inventory = new List<Item>();
+        VisionRadius = 6;
     }
 
     public void Equip(IEquippable equippable)

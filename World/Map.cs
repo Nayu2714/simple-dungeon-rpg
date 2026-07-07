@@ -5,15 +5,15 @@ namespace simple_dungeon_rpg.World;
 public class Map
 {
     private readonly Tile[,] tiles;
-    
+
     public int Height { get; }
     public int Width { get; }
-    /*
-    public List<Entity> Entities { get; } // 消してもいい・いらない
-    */
     public IReadOnlyList<Room> Rooms { get; }
 
     public (int y, int x) PlayerStartPos { get; private set; }
+    
+    private bool[,] _visible;
+    private bool[,] _explored;
 
     public Map(string[] source)
     {
@@ -34,6 +34,9 @@ public class Map
                     _   => Tile.Empty
                 };
             }
+        
+        _visible = new bool[Height, Width];
+        _explored = new bool[Height, Width];
     }
 
     private Map(Tile[,] tiles, (int startY, int startX) playerStartPos, IReadOnlyList<Room> rooms)
@@ -43,6 +46,8 @@ public class Map
         Width = tiles.GetLength(1);
         PlayerStartPos = playerStartPos;
         Rooms = rooms;
+        _visible = new bool[Height, Width];
+        _explored = new bool[Height, Width];
     }
 
     public static Map Generate(int height, int width, Random rng)
@@ -257,5 +262,31 @@ public class Map
 
             return aCenter;
         }
+    }
+    
+    public bool IsVisible(int y, int x)
+    {
+        if(y < 0 || y >= Height || x < 0 || x >= Width) return false;
+        return this._visible[y, x];
+    }
+
+    public bool IsExplored(int y, int x)
+    {
+        if(y < 0 || y >= Height || x < 0 || x >= Width) return false;
+        return this._explored[y, x];
+    }
+
+    public void Reveal(int y, int x)
+    {
+        if (y < 0 || y >= Height || x < 0 || x >= Width) return;
+        _visible[y, x] = true;
+        _explored[y, x] = true;
+    }
+
+    public void ResetVisible()
+    {
+        for (int row = 0; row < Height; row++)
+            for(int col = 0; col < Width; col++)
+                this._visible[row, col] = false;
     }
 }

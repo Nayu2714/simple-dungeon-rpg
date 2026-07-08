@@ -2,11 +2,11 @@ namespace simple_dungeon_rpg.World;
 
 public static class FieldOfView
 {
-    // 8象限分の座標変換係数: (row, col) => 実座標(y, x) への変換用
-    private static readonly int[] Yrow = { 0, 1, 1, 0, 0, -1, -1, 0 };
-    private static readonly int[] Xrow = { 1, 0, 0, -1, -1, 0, 0, 1 };
-    private static readonly int[] Ycol = { 1, 0, 0, 1, -1, 0, 0, -1 };
-    private static readonly int[] Xcol = { 0, 1, -1, 0, 0, -1, 1, 0 };
+    // 8象限分の座標変換係数: ローカル座標(depth, side) => 実座標(y, x) への変換用
+    private static readonly int[] Ydepth = { 0, 1, 1, 0, 0, -1, -1, 0 };
+    private static readonly int[] Xdepth = { 1, 0, 0, -1, -1, 0, 0, 1 };
+    private static readonly int[] Yside = { 1, 0, 0, 1, -1, 0, 0, -1 };
+    private static readonly int[] Xside = { 0, 1, -1, 0, 0, -1, 1, 0 };
     
     // 「シャドウキャスト方式FOV」
     // YX空間 を 45度8分割した象限それぞれで CastLight()を実行.
@@ -16,27 +16,31 @@ public static class FieldOfView
 
         for (int oct = 0; oct < 8; oct++)
         {
-            CastLight(map, playerY, playerX, radius, 1, 1.0, 0.0, Yrow[oct], Xrow[oct], Ycol[oct],  Xcol[oct]);
+            CastLight(map, playerY, playerX, radius, 1, 1.0, 0.0, Ydepth[oct], Xdepth[oct], Yside[oct],  Xside[oct]);
         }
     }
 
-    private static void CastLight(Map map, int playerY, int playerX, int radius, int row, double startSlope, double endSlope, int yrow, int xrow, int ycol, int xcol)
+    private static void CastLight(Map map, int playerY, int playerX, int radius, int depth, double startSlope, double endSlope, int ydepth, int xdepth, int yside, int xside)
     {
         if (startSlope < endSlope) return;
 
         bool wasWall = false;
-
-        for (int col = row; col >= 0; col--)
+        
+        for (int side = depth; side >= 0; side--) // 傾き: 1 => 0 の方向にReveal()を行っていく.
         {
-            double highSlope = (col + 0.5) / row; // 傾き:大
-            double lowSlope = (col - 0.5) / row; // 傾き:小
+            // 1*1のマス（厳密には少し違うが）をイメージ.
+            double highSlope = (side + 0.5) / depth; // 傾き 大、斜め線に近い方
+            double lowSlope = (side - 0.5) / depth; // 傾き 小、奥行き直線に近いほう
             
-            if (lowSlope > startSlope) continue; // ここわかんない；；
-            if (highSlope < endSlope) break; // 上行と同じく
+            if (lowSlope > startSlope) continue;
+            // 傾き 1（または、マスの左端（傾き 0 に近い方））の境界線を、マスが越えているので continue.
+            
+            if (highSlope < endSlope) break;
+            // 傾き 0（または、マスの右端（傾き 1 に近い方））の境界線を、マスが越えているので break.
 
-            int trueY = playerY + row * yrow + col * ycol;
-            int trueX = playerX + row * xrow + col * xcol;
-            if (radius * radius >= row * row + col * col)
+            int trueY = playerY + depth * ydepth + side * yside;
+            int trueX = playerX + depth * xdepth + side * xside;
+            if (radius * radius >= depth * depth + side * side)
             {
                 map.Reveal(trueY, trueX);
 
@@ -46,8 +50,8 @@ public static class FieldOfView
                 {
                     if (wasWall == false)
                     {
-                        // 壁に当たったら、塗りつぶし範囲を startSlope ~ highSlope にした上で、一マス奥に進んで CastLight() で再帰処理
-                        CastLight(map, playerY, playerX, radius, row + 1, startSlope, highSlope, yrow, xrow, ycol, xcol);
+                        // 壁に当たったら、塗りつぶし範囲を startSlope ~ highSlope にした上で、1マス奥に進んで CastLight().
+                        CastLight(map, playerY, playerX, radius, depth + 1, startSlope, highSlope, ydepth, xdepth, yside, xside);
                         wasWall = true;
                     }
                 }
@@ -55,6 +59,7 @@ public static class FieldOfView
                 {
                     if (wasWall == true)
                     {
+                        // 壁から抜け出した = 奥に進める ので、startSlope = highSlope で、次の CastLight() の起点にする.
                         startSlope = highSlope;
                         wasWall = false;
                     }
@@ -62,9 +67,9 @@ public static class FieldOfView
             }
         }
 
-        if (wasWall == false && row + 1 <= radius)
+        if (wasWall == false && depth + 1 <= radius)
         {
-            CastLight(map, playerY, playerX,radius, row + 1, startSlope, endSlope, yrow, xrow, ycol, xcol);
+            CastLight(map, playerY, playerX,radius, depth + 1, startSlope, endSlope, ydepth, xdepth, yside, xside);
         }
     }
 }

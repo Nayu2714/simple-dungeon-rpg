@@ -94,7 +94,7 @@ class Program
         
         var logs = new List<string>();
 
-        // マップ描画用 描画開始位置
+        // 描画用 描画開始位置
         (int row, int col) mapOriginCursor = (Console.CursorTop, Console.CursorLeft);
         (int row, int col) inventoryOriginCursor = (Console.CursorTop, Console.CursorLeft + 6);
 
@@ -155,42 +155,6 @@ class Program
                 ProcessEnemyTurn(map, player, enemies, logs);
                 map.ResetVisibility();
                 FieldOfView.Compute(map, player.Y, player.X, player.VisionRadius);
-                /*
-                int[,] dist = BuildDistanceMap(map, player.Y, player.X);
-                
-                var orderedEnemies = enemies.OrderBy(e => dist[e.Y,e.X]).ToList();
-                    
-                foreach(Enemy enemy in orderedEnemies)
-                {
-                    if (IsAdjusent(player.Y, player.X, enemy.Y, enemy.X))
-                    {
-                        player.TakeDamage(enemy.Atk);
-                        logs.Add($"{enemy.Name} の攻撃！ {enemy.Atk} ダメージ");
-                        continue;
-                    }
-                    
-                    int bestY = enemy.Y;
-                    int bestX = enemy.X;
-                    int bestDist = dist[bestY, bestX];
-
-                    for (int d = 0; d < 4; d++)
-                    {
-                        int ny = enemy.Y + dy[d];
-                        int nx = enemy.X + dx[d];
-                        
-                        if (ny < 0 || ny >= map.Height || nx < 0 || nx >= map.Width) continue;
-                        if (dist[ny, nx] == -1) continue;
-                        if (dist[ny, nx] >= bestDist) continue;
-                        if (GetEnemyAt(enemies, ny, nx) != null) continue;
-                        if (player.Y == ny && player.X == nx) continue;
-                        
-                        bestDist = dist[ny, nx];
-                        bestY = ny;
-                        bestX = nx;
-                    }
-                    enemy.MoveTo(bestY, bestX);
-                }
-                */
             }
             else if (get)
             {
@@ -288,8 +252,6 @@ class Program
 
     static void Draw(Map map, Player player, List<Enemy> enemies, List<(Item item, int y, int x)> floorItems, (int row, int col) origin, List<string> logs)
     {
-        //StringBuilder sb = new StringBuilder();
-        
         // --- I. メイン画面（マップ） ---
         for (int y = 0; y < map.Height; y++)
         {

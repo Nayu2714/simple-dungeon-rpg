@@ -283,7 +283,7 @@ public class Map
         _explored[y, x] = true;
     }
 
-    public void ResetVisible()
+    public void ResetVisibility()
     {
         for (int row = 0; row < Height; row++)
             for(int col = 0; col < Width; col++)

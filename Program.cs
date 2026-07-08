@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using simple_dungeon_rpg.Entities;
 using simple_dungeon_rpg.Items;
@@ -49,7 +50,7 @@ class Program
         Player player = new Player(map.PlayerStartPos.y, map.PlayerStartPos.x);
         
         List<Enemy> enemies = new List<Enemy>();
-        int enemyNums = 4;
+        int enemyNums = 0;
         for (int i = 1; i <= enemyNums; i++)
         {
             (int y, int x) pos;
@@ -100,6 +101,9 @@ class Program
         int[] dy = { -1, 1, 0, 0 };
         int[] dx = { 0, 0, -1, 1 };
 
+        map.ResetVisibility();
+        FieldOfView.Compute(map, player.Y, player.X, player.VisionRadius);
+        
         bool isRunning = true;
         while (isRunning)
         {
@@ -147,8 +151,10 @@ class Program
                 {
                     player.MoveTo(nextY, nextX);
                 }
-
+                
                 ProcessEnemyTurn(map, player, enemies, logs);
+                map.ResetVisibility();
+                FieldOfView.Compute(map, player.Y, player.X, player.VisionRadius);
                 /*
                 int[,] dist = BuildDistanceMap(map, player.Y, player.X);
                 
@@ -239,6 +245,8 @@ class Program
                         player.UnEquip();
                         inventory = false;
                         ProcessEnemyTurn(map, player, enemies, logs);
+                        map.ResetVisibility();
+                        FieldOfView.Compute(map, player.Y, player.X, player.VisionRadius);
                     }
                     else
                     {
@@ -249,11 +257,15 @@ class Program
                             usable.Use(player);
                             if (usable.IsConsumable) player.RemoveItem(item);
                             ProcessEnemyTurn(map, player, enemies, logs);
+                            map.ResetVisibility();
+                            FieldOfView.Compute(map, player.Y, player.X, player.VisionRadius);
                         }
                         else if (item is IEquippable equippable)
                         {
                             player.Equip(equippable);
                             ProcessEnemyTurn(map, player, enemies, logs);
+                            map.ResetVisibility();
+                            FieldOfView.Compute(map, player.Y, player.X, player.VisionRadius);
                         }
                         // ---
                         inventory = false;
@@ -276,44 +288,61 @@ class Program
 
     static void Draw(Map map, Player player, List<Enemy> enemies, List<(Item item, int y, int x)> floorItems, (int row, int col) origin, List<string> logs)
     {
-        StringBuilder sb = new StringBuilder();
+        //StringBuilder sb = new StringBuilder();
         
         // --- I. メイン画面（マップ） ---
         for (int y = 0; y < map.Height; y++)
         {
+            Console.SetCursorPosition(origin.col, origin.row + y);
+            
             for (int x = 0; x < map.Width; x++)
             {
-                if (player.Y == y && player.X == x && !player.IsDead)
+                if (map.IsVisible(y, x) == false && map.IsExplored(y, x) == false)
                 {
-                    sb.Append(player.Symbol);
+                    Console.Write(' ');
                 }
-                else
+                else if (map.IsVisible(y, x) == false && map.IsExplored(y, x) == true)
                 {
-                    Enemy? enemy = GetEnemyAt(enemies, y, x);
-                    if (enemy != null)
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    Console.Write(map.GetTile(y, x));
+                }
+                else if (map.IsVisible(y, x) == true)
+                {
+                    Console.ResetColor();
+                    if (player.Y == y && player.X == x && !player.IsDead) 
                     {
-                        sb.Append(enemy.Symbol);
-                    }
-                    else if (GetItemAt(floorItems, y, x) is Item item)
-                    {
-                        sb.Append(item.Symbol);
+                        Console.Write(player.Symbol);
                     }
                     else
                     {
-                        sb.Append(map.GetTile(y, x));
+                        Enemy? enemy = GetEnemyAt(enemies, y, x);
+                        if (enemy != null)
+                        {
+                            Console.Write(enemy.Symbol);
+                        }
+                        else if (GetItemAt(floorItems, y, x) is Item item)
+                        {
+                            Console.Write(item.Symbol);
+                        }
+                        else
+                        {
+                            Console.Write(map.GetTile(y, x));
+                        }
                     }
                 }
             }
-            sb.AppendLine();
+            Console.ResetColor();
+            Console.WriteLine();
         }
-        sb.AppendLine();
+        Console.WriteLine();
         
-        // --- II. ステータス ---
+        // --- II. ステータス・ログ ---
+        StringBuilder sb = new StringBuilder();
+        
         string status = $"HP: {player.Hp} / {player.MaxHp}";
         sb.AppendLine(status.PadRight(27));
         sb.AppendLine();
         
-        // --- III. ログ ---
         int logLines = 5;
         var recent = logs.Skip(Math.Max(0, logs.Count - logLines)).ToList();
         for (int i = 0; i < logLines; i++)
@@ -322,7 +351,7 @@ class Program
             sb.AppendLine(line.PadRight(40));
         }
         
-        Console.SetCursorPosition(origin.col, origin.row);
+        Console.SetCursorPosition(origin.col, origin.row + map.Height + 1);
         Console.Write(sb.ToString());
     }
 

@@ -28,11 +28,11 @@ public static class FieldOfView
 
         for (int col = row; col >= 0; col--)
         {
-            double highSlope = (col + 0.5) / row; // 遠い方の角 傾き:大
-            double lowSlope = (col - 0.5) / row; // 近い方の角 傾き:小
+            double highSlope = (col + 0.5) / row; // 傾き:大
+            double lowSlope = (col - 0.5) / row; // 傾き:小
             
-            if (lowSlope > startSlope) continue;
-            if (highSlope < endSlope) break;
+            if (lowSlope > startSlope) continue; // ここわかんない；；
+            if (highSlope < endSlope) break; // 上行と同じく
 
             int trueY = playerY + row * yrow + col * ycol;
             int trueX = playerX + row * xrow + col * xcol;
@@ -46,6 +46,7 @@ public static class FieldOfView
                 {
                     if (wasWall == false)
                     {
+                        // 壁に当たったら、塗りつぶし範囲を startSlope ~ highSlope にした上で、一マス奥に進んで CastLight() で再帰処理
                         CastLight(map, playerY, playerX, radius, row + 1, startSlope, highSlope, yrow, xrow, ycol, xcol);
                         wasWall = true;
                     }

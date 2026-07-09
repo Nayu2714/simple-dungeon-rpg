@@ -19,6 +19,10 @@ class Program
 
         var rng = new Random();
         
+        Floor currentFloor = Floor.Generate(rng, 1);
+        
+        Player player = new Player(currentFloor.Map.PlayerStartPos.y, currentFloor.Map.PlayerStartPos.x);
+        
         /*
         string[] mapSource =
         {
@@ -30,6 +34,7 @@ class Program
         };
         */
         
+        /*
         Map map = Map.Generate(20,40, rng);
 
         (int y, int x) downStairsPos;
@@ -69,7 +74,7 @@ class Program
         enemies.Add(new Enemy("Enemy", 1, 4));
         enemies.Add(new Enemy("Enemy", 4, 7));
         */
-        
+        /*
         List<(Item item, int y, int x)> floorItems = new List<(Item item, int y, int x)>();
         List<Item> initItems = new List<Item>();
         initItems.Add(new Potion("HealPotion", 20));
@@ -87,6 +92,7 @@ class Program
             attempts = 0;
             floorItems.Add((item, pos.y, pos.x));
         }
+        */
         
         Console.WriteLine("【W/A/S/D】移動・攻撃 | 【Q】ゲーム終了");
         Console.WriteLine("-----------------------------------");
@@ -101,13 +107,13 @@ class Program
         int[] dy = { -1, 1, 0, 0 };
         int[] dx = { 0, 0, -1, 1 };
 
-        map.ResetVisibility();
-        FieldOfView.Compute(map, player.Y, player.X, player.VisionRadius);
+        currentFloor.Map.ResetVisibility();
+        FieldOfView.Compute(currentFloor.Map, player.Y, player.X, player.VisionRadius);
         
         bool isRunning = true;
         while (isRunning)
         {
-            Draw(map, player, enemies, floorItems, mapOriginCursor, logs);
+            Draw(currentFloor, player, mapOriginCursor, logs);
             
             // 入力部
             ConsoleKeyInfo inputKey = Console.ReadKey(true);
@@ -133,7 +139,7 @@ class Program
                 int nextY = player.Y + dy[dir];
                 int nextX = player.X + dx[dir];
                 
-                Enemy? target = GetEnemyAt(enemies, nextY, nextX);
+                Enemy? target = currentFloor.GetEnemyAt(nextY, nextX);
 
                 if (target != null)
                 {
@@ -143,29 +149,29 @@ class Program
                     
                     if (target.IsDead)
                     {
-                        enemies.Remove(target);
+                        currentFloor.Enemies.Remove(target);
                         logs.Add($"{target.Name} を倒した！");
                     }
                 }
-                else if(map.CanMoveTo(nextY, nextX))
+                else if(currentFloor.Map.CanMoveTo(nextY, nextX))
                 {
                     player.MoveTo(nextY, nextX);
                 }
                 
-                ProcessEnemyTurn(map, player, enemies, logs);
-                map.ResetVisibility();
-                FieldOfView.Compute(map, player.Y, player.X, player.VisionRadius);
+                ProcessEnemyTurn(currentFloor, player, logs);
+                currentFloor.Map.ResetVisibility();
+                FieldOfView.Compute(currentFloor.Map, player.Y, player.X, player.VisionRadius);
             }
             else if (get)
             {
-                var hearItems = GetItemsAt(floorItems, player.Y, player.X);
+                var hearItems = currentFloor.GetItemsAt(player.Y, player.X);
                 if (hearItems.Count > 0)
                 {
                     foreach (var item in hearItems)
                     {
                         player.AddItem(item);
                     }
-                    floorItems.RemoveAll(item => item.y == player.Y && item.x == player.X);
+                    currentFloor.FloorItems.RemoveAll(item => item.y == player.Y && item.x == player.X);
                 }
             }
 
@@ -208,9 +214,9 @@ class Program
                         // 装備行 が選択された時の処理
                         player.UnEquip();
                         inventory = false;
-                        ProcessEnemyTurn(map, player, enemies, logs);
-                        map.ResetVisibility();
-                        FieldOfView.Compute(map, player.Y, player.X, player.VisionRadius);
+                        ProcessEnemyTurn(currentFloor, player, logs);
+                        currentFloor.Map.ResetVisibility();
+                        FieldOfView.Compute(currentFloor.Map, player.Y, player.X, player.VisionRadius);
                     }
                     else
                     {
@@ -220,16 +226,16 @@ class Program
                         {
                             usable.Use(player);
                             if (usable.IsConsumable) player.RemoveItem(item);
-                            ProcessEnemyTurn(map, player, enemies, logs);
-                            map.ResetVisibility();
-                            FieldOfView.Compute(map, player.Y, player.X, player.VisionRadius);
+                            ProcessEnemyTurn(currentFloor, player, logs);
+                            currentFloor.Map.ResetVisibility();
+                            FieldOfView.Compute(currentFloor.Map, player.Y, player.X, player.VisionRadius);
                         }
                         else if (item is IEquippable equippable)
                         {
                             player.Equip(equippable);
-                            ProcessEnemyTurn(map, player, enemies, logs);
-                            map.ResetVisibility();
-                            FieldOfView.Compute(map, player.Y, player.X, player.VisionRadius);
+                            ProcessEnemyTurn(currentFloor, player, logs);
+                            currentFloor.Map.ResetVisibility();
+                            FieldOfView.Compute(currentFloor.Map, player.Y, player.X, player.VisionRadius);
                         }
                         // ---
                         inventory = false;
@@ -247,28 +253,28 @@ class Program
         Console.CursorVisible = true;
         if(player.IsDead) logs.Add("ゲームオーバー！");
         logs.Add("ゲームを終了しました。");
-        Draw(map, player, enemies, floorItems, mapOriginCursor, logs);
+        Draw(currentFloor, player, mapOriginCursor, logs);
     }
 
-    static void Draw(Map map, Player player, List<Enemy> enemies, List<(Item item, int y, int x)> floorItems, (int row, int col) origin, List<string> logs)
+    static void Draw(Floor floor, Player player, (int row, int col) origin, List<string> logs)
     {
         // --- I. メイン画面（マップ） ---
-        for (int y = 0; y < map.Height; y++)
+        for (int y = 0; y < floor.Map.Height; y++)
         {
             Console.SetCursorPosition(origin.col, origin.row + y);
             
-            for (int x = 0; x < map.Width; x++)
+            for (int x = 0; x < floor.Map.Width; x++)
             {
-                if (map.IsVisible(y, x) == false && map.IsExplored(y, x) == false)
+                if (floor.Map.IsVisible(y, x) == false && floor.Map.IsExplored(y, x) == false)
                 {
                     Console.Write(' ');
                 }
-                else if (map.IsVisible(y, x) == false && map.IsExplored(y, x) == true)
+                else if (floor.Map.IsVisible(y, x) == false && floor.Map.IsExplored(y, x) == true)
                 {
                     Console.ForegroundColor = ConsoleColor.DarkGray;
-                    Console.Write(map.GetTile(y, x));
+                    Console.Write(floor.Map.GetTile(y, x));
                 }
-                else if (map.IsVisible(y, x) == true)
+                else if (floor.Map.IsVisible(y, x) == true)
                 {
                     Console.ResetColor();
                     if (player.Y == y && player.X == x && !player.IsDead) 
@@ -277,18 +283,18 @@ class Program
                     }
                     else
                     {
-                        Enemy? enemy = GetEnemyAt(enemies, y, x);
+                        Enemy? enemy = floor.GetEnemyAt(y, x);
                         if (enemy != null)
                         {
                             Console.Write(enemy.Symbol);
                         }
-                        else if (GetItemAt(floorItems, y, x) is Item item)
+                        else if (floor.GetItemAt(y, x) is Item item)
                         {
                             Console.Write(item.Symbol);
                         }
                         else
                         {
-                            Console.Write(map.GetTile(y, x));
+                            Console.Write(floor.Map.GetTile(y, x));
                         }
                     }
                 }
@@ -313,7 +319,7 @@ class Program
             sb.AppendLine(line.PadRight(40));
         }
         
-        Console.SetCursorPosition(origin.col, origin.row + map.Height + 1);
+        Console.SetCursorPosition(origin.col, origin.row + floor.Map.Height + 1);
         Console.Write(sb.ToString());
     }
 
@@ -346,14 +352,14 @@ class Program
         }
     }
 
-    static void ProcessEnemyTurn(Map map, Player player, List<Enemy> enemies, List<string> logs)
+    static void ProcessEnemyTurn(Floor floor, Player player, List<string> logs)
     {
         int[] dy = { -1, 1, 0, 0 };
         int[] dx = { 0, 0, -1, 1 };
 
-        int[,] dist = BuildDistanceMap(map, player.Y, player.X);
+        int[,] dist = BuildDistanceMap(floor.Map, player.Y, player.X);
         
-        var orderedEnemies = enemies.OrderBy(e => dist[e.Y,e.X]).ToList();
+        var orderedEnemies = floor.Enemies.OrderBy(e => dist[e.Y,e.X]).ToList();
         
         foreach(Enemy enemy in orderedEnemies)
         {
@@ -373,10 +379,10 @@ class Program
                 int ny = enemy.Y + dy[d];
                 int nx = enemy.X + dx[d];
                         
-                if (ny < 0 || ny >= map.Height || nx < 0 || nx >= map.Width) continue;
+                if (ny < 0 || ny >= floor.Map.Height || nx < 0 || nx >= floor.Map.Width) continue;
                 if (dist[ny, nx] == -1) continue;
                 if (dist[ny, nx] >= bestDist) continue;
-                if (GetEnemyAt(enemies, ny, nx) != null) continue;
+                if (floor.GetEnemyAt(ny, nx) != null) continue;
                 if (player.Y == ny && player.X == nx) continue;
                         
                 bestDist = dist[ny, nx];
@@ -386,7 +392,7 @@ class Program
             enemy.MoveTo(bestY, bestX);
         }
     }
-    
+    /*
     static Enemy? GetEnemyAt(List<Enemy> enemies, int y, int x)
     {
         return enemies.FirstOrDefault(enemy => enemy.Y == y && enemy.X == x);
@@ -401,7 +407,7 @@ class Program
     {
         return floorItems.Where(entry => entry.y == y && entry.x == x).Select(e => e.item).ToList();
     }
-
+    */
     static int[,] BuildDistanceMap(Map map, int startY, int startX)
     {
         int[] dy = { -1, 1, 0, 0 };

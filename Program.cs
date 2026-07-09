@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Text;
+﻿using System.Text;
 using simple_dungeon_rpg.Entities;
 using simple_dungeon_rpg.Items;
 using simple_dungeon_rpg.Items.Interfaces;
@@ -22,77 +20,6 @@ class Program
         Floor currentFloor = Floor.Generate(rng, 1);
         
         Player player = new Player(currentFloor.Map.PlayerStartPos.y, currentFloor.Map.PlayerStartPos.x);
-        
-        /*
-        string[] mapSource =
-        {
-            "......#..",
-            ".###.....",
-            ".#....#..",
-            ".##.#....",
-            ".#......."
-        };
-        */
-        
-        /*
-        Map map = Map.Generate(20,40, rng);
-
-        (int y, int x) downStairsPos;
-        int attempts = 0;
-        do
-        {
-            downStairsPos = map.Rooms[rng.Next(map.Rooms.Count)].RandomPoint(rng);
-            attempts++;
-        }
-        while (downStairsPos == map.PlayerStartPos && attempts < 100);
-        attempts = 0;
-        
-        (int y, int x) upStairsPos = map.PlayerStartPos;
-        
-        map.SetDownStairs(downStairsPos.y, downStairsPos.x);
-        map.SetUpStairs(upStairsPos.y, upStairsPos.x);
-        
-        Player player = new Player(map.PlayerStartPos.y, map.PlayerStartPos.x);
-        
-        List<Enemy> enemies = new List<Enemy>();
-        int enemyNums = 0;
-        for (int i = 1; i <= enemyNums; i++)
-        {
-            (int y, int x) pos;
-            do
-            {
-                pos = map.Rooms[rng.Next(0, map.Rooms.Count)].RandomPoint(rng);
-                attempts++;
-            }
-            while((!map.CanMoveTo(pos.y, pos.x) || GetEnemyAt(enemies, pos.y, pos.x) != null || pos == map.PlayerStartPos) && attempts < 100);
-            attempts = 0;
-            enemies.Add(new Enemy("Enemy", pos.y, pos.x));
-        }
-        
-        /*
-        enemies.Add(new Enemy("Enemy", 0, 0));
-        enemies.Add(new Enemy("Enemy", 1, 4));
-        enemies.Add(new Enemy("Enemy", 4, 7));
-        */
-        /*
-        List<(Item item, int y, int x)> floorItems = new List<(Item item, int y, int x)>();
-        List<Item> initItems = new List<Item>();
-        initItems.Add(new Potion("HealPotion", 20));
-        initItems.Add(new Potion("HealPotion", 20));
-        initItems.Add(new Weapon("IronSword", 5));
-        foreach(var item in initItems)
-        {
-            (int y, int x) pos;
-            do
-            {
-                pos = map.Rooms[rng.Next(0, map.Rooms.Count)].RandomPoint(rng);
-                attempts++;
-            } while ((!map.CanMoveTo(pos.y, pos.x) || GetItemAt(floorItems, pos.y, pos.x) != null ||
-                      pos == map.PlayerStartPos) && attempts < 100);
-            attempts = 0;
-            floorItems.Add((item, pos.y, pos.x));
-        }
-        */
         
         Console.WriteLine("【W/A/S/D】移動・攻撃 | 【Q】ゲーム終了");
         Console.WriteLine("-----------------------------------");
@@ -392,22 +319,7 @@ class Program
             enemy.MoveTo(bestY, bestX);
         }
     }
-    /*
-    static Enemy? GetEnemyAt(List<Enemy> enemies, int y, int x)
-    {
-        return enemies.FirstOrDefault(enemy => enemy.Y == y && enemy.X == x);
-    }
-
-    static Item? GetItemAt(List<(Item item, int y, int x)> floorItems, int y, int x)
-    {
-        return floorItems.FirstOrDefault(items => items.y == y && items.x == x).item;
-    }
     
-    static List<Item> GetItemsAt(List<(Item item, int y, int x)> floorItems, int y, int x)
-    {
-        return floorItems.Where(entry => entry.y == y && entry.x == x).Select(e => e.item).ToList();
-    }
-    */
     static int[,] BuildDistanceMap(Map map, int startY, int startX)
     {
         int[] dy = { -1, 1, 0, 0 };

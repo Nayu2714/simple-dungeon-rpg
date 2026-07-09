@@ -23,20 +23,21 @@ public static class FieldOfView
     private static void CastLight(Map map, int playerY, int playerX, int radius, int depth, double startSlope, double endSlope, int ydepth, int xdepth, int yside, int xside)
     {
         if (startSlope < endSlope) return;
+        // 担当範囲（startSlope, endSlope）の反転＝空になっている場合の return. 担当外のマスへのReveal()を防ぐ.
 
         bool wasWall = false;
         
         for (int side = depth; side >= 0; side--) // 傾き: 1 => 0 の方向にReveal()を行っていく.
         {
             // 1*1のマス（厳密には少し違うが）をイメージ.
-            double highSlope = (side + 0.5) / depth; // 傾き 大、斜め線に近い方
-            double lowSlope = (side - 0.5) / depth; // 傾き 小、奥行き直線に近いほう
+            double highSlope = (side + 0.5) / depth; // 傾き 大、斜め線（傾き１の直線）に近い方
+            double lowSlope = (side - 0.5) / depth; // 傾き 小、奥行き直線（傾き０の直線）に近いほう
             
             if (lowSlope > startSlope) continue;
-            // 傾き 1（または、マスの左端（傾き 0 に近い方））の境界線を、マスが越えているので continue.
+            // このマスの下端（lowSlope）がまだ斜め線（startSlope）よりも外側 → 担当範囲にまだ入っていないので continue.
             
             if (highSlope < endSlope) break;
-            // 傾き 0（または、マスの右端（傾き 1 に近い方））の境界線を、マスが越えているので break.
+            // このマスの上端（highSlope）が既に奥行き直線（endSlope）よりも外側 → 担当範囲を通り過ぎているので break.
 
             int trueY = playerY + depth * ydepth + side * yside;
             int trueX = playerX + depth * xdepth + side * xside;

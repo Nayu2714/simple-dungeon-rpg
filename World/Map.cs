@@ -117,6 +117,18 @@ public class Map
             _ => false
         };
     }
+
+    public bool IsDownStairs(int y, int x)
+    {
+        if (x < 0 || y < 0 || x >= Width || y >= Height) return false;
+        return (tiles[y, x] == Tile.DownStairs);
+    }
+
+    public bool IsUpStairs(int y, int x)
+    {
+        if (x < 0 || y < 0 || x >= Width || y >= Height) return false;
+        return (tiles[y, x] == Tile.UpStairs);
+    }
     
     public void SetDownStairs(int y, int x)
     {

@@ -86,6 +86,14 @@ class Program
                 }
                 
                 ProcessEnemyTurn(currentFloor, player, logs);
+                
+                if (currentFloor.Map.IsDownStairs(player.Y, player.X))
+                {
+                    currentFloor = Floor.Generate(rng, currentFloor.Number + 1);
+                    player.MoveTo(currentFloor.Map.PlayerStartPos.y, currentFloor.Map.PlayerStartPos.x);
+                    logs.Add($"階段を降りた。 現在: {currentFloor.Number}階");
+                }
+                
                 currentFloor.Map.ResetVisibility();
                 FieldOfView.Compute(currentFloor.Map, player.Y, player.X, player.VisionRadius);
             }

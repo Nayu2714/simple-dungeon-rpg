@@ -42,6 +42,7 @@ public class Player : Entity
 
     public void UnEquip()
     {
+        if (this.Weapon == null) return;
         AddItem(this.Weapon);
         this.Weapon = null;
     }

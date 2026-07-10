@@ -28,12 +28,12 @@ public class Floor
         return floorItems.Where(entry => entry.y == y && entry.x == x).Select(entry => entry.item).ToList();
     }
     
-    private Floor(Map map, List<Enemy> enemies, List<(Item item, int y, int x)> floorItems, int Number)
+    private Floor(Map map, List<Enemy> enemies, List<(Item item, int y, int x)> floorItems, int number)
     {
         Map = map;
         Enemies = enemies;
         FloorItems = floorItems;
-        this.Number = Number;
+        Number = number;
     }
 
     public static Floor Generate(Random rng, int floorNumber)
@@ -73,6 +73,7 @@ public class Floor
             enemies.Add(new Enemy("Enemy", pos.y, pos.x));
         }
         
+        // IV. Item 配置
         List<(Item item, int y, int x)> floorItems = new List<(Item item, int y, int x)>();
         List<Item> initItems = new List<Item>();
         initItems.Add(new Potion("HealPotion", 20));

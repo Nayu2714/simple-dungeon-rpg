@@ -62,6 +62,7 @@ public class Floor
         int enemyNums = 4;
         for (int i = 1; i <= enemyNums; i++)
         {
+            EnemyDefinition chosenEnemy = EnemySpawnTable.Choose(rng, floorNumber);
             (int y, int x) pos;
             do
             {
@@ -70,7 +71,7 @@ public class Floor
             }
             while((!map.CanMoveTo(pos.y, pos.x) || GetEnemyAt(enemies, pos.y, pos.x) != null || pos == map.PlayerStartPos) && attempts < 100);
             attempts = 0;
-            enemies.Add(new Enemy("Enemy", pos.y, pos.x));
+            enemies.Add(new Enemy(chosenEnemy, pos.y, pos.x));
         }
         
         // IV. Item 配置

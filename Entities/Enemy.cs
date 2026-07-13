@@ -2,12 +2,13 @@ namespace simple_dungeon_rpg.Entities;
 
 public class Enemy : Entity
 {
-    public override char Symbol => 'E';
-    
     public string Name { get; private set; }
+    public override char Symbol => _symbol;
+    private readonly char _symbol;
 
-    public Enemy(string name, int y, int x) : base(y, x, maxHp: 5, hp: 5, atk: 2)
+    public Enemy(EnemyDefinition definition, int y, int x) : base(y, x, maxHp: definition.MaxHp, hp: definition.MaxHp, atk: definition.Atk)
     {
-        this.Name = name;
+        this.Name = definition.Name;
+        this._symbol = definition.Symbol;
     }
 }

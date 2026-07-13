@@ -15,7 +15,7 @@ public class EnemyDefinition
         Atk = atk;
     }
 
-    public static readonly EnemyDefinition Moss_Rat = new EnemyDefinition("新緑のネズミ", 'R', 3, 1);
-    public static readonly EnemyDefinition Lone_Wolf = new EnemyDefinition("はぐれオオカミ", 'W', 6, 3);
-    public static readonly EnemyDefinition Rusty_Automaton = new EnemyDefinition("錆鉄のオートマトン", 'A', 12, 5);
+    public static readonly EnemyDefinition MossRat = new EnemyDefinition("新緑のネズミ", 'R', 3, 1);
+    public static readonly EnemyDefinition LoneWolf = new EnemyDefinition("はぐれオオカミ", 'W', 6, 3);
+    public static readonly EnemyDefinition RustyAutomaton = new EnemyDefinition("錆鉄のオートマトン", 'A', 12, 5);
 }

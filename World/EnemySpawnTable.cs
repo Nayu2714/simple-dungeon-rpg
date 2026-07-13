@@ -22,9 +22,9 @@ public static class EnemySpawnTable
 {
     private static readonly List<EnemySpawnEntry> Entries = new List<EnemySpawnEntry>()
     {
-        new EnemySpawnEntry(EnemyDefinition.Moss_Rat, minFloor: 1, maxFloor: 999, weight: 3),
-        new EnemySpawnEntry(EnemyDefinition.Lone_Wolf, minFloor: 3, maxFloor: 999, weight: 3),
-        new EnemySpawnEntry(EnemyDefinition.Rusty_Automaton, minFloor: 6, maxFloor: 999, weight: 2)
+        new EnemySpawnEntry(EnemyDefinition.MossRat, minFloor: 1, maxFloor: 999, weight: 3),
+        new EnemySpawnEntry(EnemyDefinition.LoneWolf, minFloor: 3, maxFloor: 999, weight: 3),
+        new EnemySpawnEntry(EnemyDefinition.RustyAutomaton, minFloor: 6, maxFloor: 999, weight: 2)
     };
     
     public static EnemyDefinition Choose(Random rng, int floorNumber)

@@ -9,6 +9,7 @@ namespace simple_dungeon_rpg;
 class Program
 {
     static readonly int NewLineLength = Environment.NewLine.Length;
+    private static readonly int MaxFloor = 10;
     
     static void Main()
     {
@@ -17,7 +18,7 @@ class Program
 
         var rng = new Random();
         
-        Floor currentFloor = Floor.Generate(rng, 1);
+        Floor currentFloor = Floor.Generate(rng, 10);
         
         Player player = new Player(currentFloor.Map.PlayerStartPos.y, currentFloor.Map.PlayerStartPos.x);
         
@@ -38,6 +39,7 @@ class Program
         FieldOfView.Compute(currentFloor.Map, player.Y, player.X, player.VisionRadius);
         
         bool isRunning = true;
+        bool isCleared = false;
         while (isRunning)
         {
             Draw(currentFloor, player, mapOriginCursor, logs);
@@ -89,9 +91,17 @@ class Program
                 
                 if (currentFloor.Map.IsDownStairs(player.Y, player.X))
                 {
-                    currentFloor = Floor.Generate(rng, currentFloor.Number + 1);
-                    player.MoveTo(currentFloor.Map.PlayerStartPos.y, currentFloor.Map.PlayerStartPos.x);
-                    logs.Add($"階段を降りた。 現在: {currentFloor.Number}階");
+                    if (currentFloor.Number == MaxFloor)
+                    {
+                        isCleared = true;
+                        break;
+                    }
+                    else
+                    {
+                        currentFloor = Floor.Generate(rng, currentFloor.Number + 1);
+                        player.MoveTo(currentFloor.Map.PlayerStartPos.y, currentFloor.Map.PlayerStartPos.x);
+                        logs.Add($"階段を降りた。 現在: {currentFloor.Number}階");
+                    }
                 }
                 
                 currentFloor.Map.ResetVisibility();
@@ -183,10 +193,12 @@ class Program
             }
             
             if (player.IsDead) isRunning = false;
+            if (isCleared) isRunning = false;
         }
         
         Console.CursorVisible = true;
-        if(player.IsDead) logs.Add("ゲームオーバー！");
+        if(player.IsDead) logs.Add("ゲームオーバー");
+        if(isCleared) logs.Add("ゲームクリア！");
         logs.Add("ゲームを終了しました。");
         Draw(currentFloor, player, mapOriginCursor, logs);
     }

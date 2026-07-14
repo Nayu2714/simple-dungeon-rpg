@@ -92,8 +92,15 @@ public class Map
         
         return new Map(tiles, playerStartPos,rooms);
     }
+
+    public Tile GetTile(int y, int x)
+    {
+        if (x < 0 || y < 0 || x >= Width || y >= Height) return Tile.Empty;
+        
+        return tiles[y, x];
+    }
     
-    public char GetTile(int y, int x)
+    public char GetTileSymbol(int y, int x)
     {
         return tiles[y, x] switch
         {
@@ -107,9 +114,7 @@ public class Map
     
     public bool CanMoveTo(int y, int x)
     {
-        if (x < 0 || y < 0 || x >= Width || y >= Height) return false;
-
-        return tiles[y, x] switch
+        return GetTile(y, x) switch
         {
             Tile.Floor => true,
             Tile.UpStairs => true,
@@ -120,14 +125,12 @@ public class Map
 
     public bool IsDownStairs(int y, int x)
     {
-        if (x < 0 || y < 0 || x >= Width || y >= Height) return false;
-        return (tiles[y, x] == Tile.DownStairs);
+        return (GetTile(y, x) == Tile.DownStairs);
     }
 
     public bool IsUpStairs(int y, int x)
     {
-        if (x < 0 || y < 0 || x >= Width || y >= Height) return false;
-        return (tiles[y, x] == Tile.UpStairs);
+        return (GetTile(y, x) == Tile.UpStairs);
     }
     
     public void SetDownStairs(int y, int x)

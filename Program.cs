@@ -18,7 +18,7 @@ class Program
 
         var rng = new Random();
         
-        Floor currentFloor = Floor.Generate(rng, 10);
+        Floor currentFloor = Floor.Generate(rng, 1);
         
         Player player = new Player(currentFloor.Map.PlayerStartPos.y, currentFloor.Map.PlayerStartPos.x);
         
@@ -219,7 +219,7 @@ class Program
                 else if (floor.Map.IsVisible(y, x) == false && floor.Map.IsExplored(y, x) == true)
                 {
                     Console.ForegroundColor = ConsoleColor.DarkGray;
-                    Console.Write(floor.Map.GetTile(y, x));
+                    Console.Write(floor.Map.GetTileSymbol(y, x));
                 }
                 else if (floor.Map.IsVisible(y, x) == true)
                 {
@@ -241,7 +241,7 @@ class Program
                         }
                         else
                         {
-                            Console.Write(floor.Map.GetTile(y, x));
+                            Console.Write(floor.Map.GetTileSymbol(y, x));
                         }
                     }
                 }
@@ -363,7 +363,7 @@ class Program
                 int nx = x+dx[d];
                 if (ny >= 0 && ny < map.Height &&
                     nx >= 0 && nx < map.Width &&
-                    map.GetTile(ny, nx) != '#' &&
+                    map.GetTileSymbol(ny, nx) != '#' &&
                     dist[ny, nx] == -1)
                 {
                     dist[ny, nx] = dist[y, x] + 1;
